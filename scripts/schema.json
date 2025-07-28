@@ -1,0 +1,36 @@
+{
+  "items": {
+    "tableName": "items",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "generator": "commerce.productName"
+      },
+      {
+        "name": "description",
+        "type": "string", 
+        "generator": "commerce.productDescription"
+      },
+      {
+        "name": "quantity",
+        "type": "number",
+        "generator": "number.int",
+        "options": { "min": 0, "max": 1000 }
+      },
+      {
+        "name": "price",
+        "type": "number",
+        "generator": "commerce.price",
+        "options": { "min": 1, "max": 5000, "dec": 2 },
+        "transform": "parseFloat"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "generator": "helpers.arrayElement",
+        "options": ["Electronics", "Furniture", "Office Supplies", "Books", "Clothing", "Sports", "Home & Garden", "Tools", "Toys", "Beauty"]
+      }
+    ]
+  }
+}
