@@ -1,4 +1,4 @@
-name: test-postgresql
+name: testpostgresql
 cpuCores: 1
 memoryGB: 1
 dbName: test
