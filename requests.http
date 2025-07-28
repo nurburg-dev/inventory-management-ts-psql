@@ -19,7 +19,7 @@ Content-Type: application/json
 
 ###
 # Get item by ID
-GET {{baseUrl}}/api/items/1
+GET {{baseUrl}}/api/items/5
 
 ###
 # Get top 100 items by category ordered by quantity
