@@ -1,0 +1,50 @@
+###
+# Inventory Management System API Documentation
+###
+
+@baseUrl = http://localhost:3000
+
+###
+# Create new item
+POST {{baseUrl}}/api/items
+Content-Type: application/json
+
+{
+  "name": "MacBook Pro",
+  "description": "Apple laptop",
+  "quantity": 25,
+  "price": 2499.99,
+  "category": "Electronics"
+}
+
+###
+# Get item by ID
+GET {{baseUrl}}/api/items/5
+
+###
+# Get top 100 items by category ordered by quantity
+GET {{baseUrl}}/api/items/category/Electronics/top
+
+###
+# Create temporary inventory block (expires in 1 hour)
+POST {{baseUrl}}/api/items/block/temporary
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "quantity": 5
+}
+
+###
+# Make temporary block permanent
+POST {{baseUrl}}/api/items/block/permanent
+Content-Type: application/json
+
+{
+  "blockId": 1
+}
+
+###
+# Clean up expired temporary blocks
+POST {{baseUrl}}/api/items/cleanup/expired-blocks
+Content-Type: application/json
