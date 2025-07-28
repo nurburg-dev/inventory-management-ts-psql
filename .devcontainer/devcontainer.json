@@ -11,7 +11,8 @@
         "ms-vscode.vscode-json",
         "bradlc.vscode-tailwindcss",
         "ms-vscode.vscode-eslint",
-        "ckolkman.vscode-postgres"
+        "ckolkman.vscode-postgres",
+        "humao.rest-client"
       ],
       "settings": {
         "typescript.preferences.preferTypeOnlyAutoImports": true,
