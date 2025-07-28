@@ -10,12 +10,6 @@ CREATE TABLE IF NOT EXISTS items (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on name for faster searches
-CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
-
--- Create index on category for filtering
-CREATE INDEX IF NOT EXISTS idx_items_category ON items(category);
-
 -- Insert sample data
 INSERT INTO items (name, description, quantity, price, category) VALUES
 ('Laptop', 'Dell XPS 13 laptop', 10, 999.99, 'Electronics'),

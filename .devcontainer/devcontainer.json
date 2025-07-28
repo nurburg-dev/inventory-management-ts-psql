@@ -2,7 +2,7 @@
   "name": "Inventory Management TypeScript PostgreSQL",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/inventory-management-ts-psql",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -21,6 +21,7 @@
     }
   },
   "postCreateCommand": "npm install",
+  "remoteUser": "node",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "18"

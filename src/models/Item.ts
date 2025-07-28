@@ -17,10 +17,17 @@ export interface CreateItemRequest {
   category?: string;
 }
 
-export interface UpdateItemRequest {
-  name?: string;
-  description?: string;
-  quantity?: number;
-  price?: number;
-  category?: string;
+export interface TemporarilyBlockInventoryRequest {
+  itemId: number;
+  quantity: number;
 }
+
+export interface TemporarilyBlockInventoryResponse {
+  blockId: number;
+}
+
+export interface PermanentlyBlockInventory {
+  blockId: number;
+}
+
+export interface ReleaseOldTemporaryBlockRequest {}

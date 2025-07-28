@@ -6,8 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ../..:/workspaces:cached
+      - ..:/workspaces/inventory-management-ts-psql:cached
     command: sleep infinity
+    user: node
     network_mode: service:db
     depends_on:
       - db
