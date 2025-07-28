@@ -29,5 +29,3 @@ export interface TemporarilyBlockInventoryResponse {
 export interface PermanentlyBlockInventory {
   blockId: number;
 }
-
-export interface ReleaseOldTemporaryBlockRequest {}
