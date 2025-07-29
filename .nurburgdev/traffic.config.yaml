@@ -1,2 +1,3 @@
 env:
   API_HOST: http://testservice:3000
+runtimeInMinutes: 15

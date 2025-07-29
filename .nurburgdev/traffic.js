@@ -66,7 +66,7 @@ export const options = {
       executor: "shared-iterations",
       vus: 50, // 50 virtual users
       iterations: ITEM_COUNT, // 50,000 total iterations
-      maxDuration: "10m",
+      maxDuration: "3m",
       tags: { scenario: "setup" },
       exec: "setupItems",
     },
@@ -77,23 +77,21 @@ export const options = {
       startVUs: 1,
       stages: [
         { duration: "2m", target: 100 }, // Ramp up to 100 users
-        { duration: "3m", target: 100 }, // Stay at 100 users
         { duration: "2m", target: 500 }, // Ramp up to 500 users
-        { duration: "3m", target: 500 }, // Stay at 500 users
         { duration: "2m", target: 1000 }, // Ramp up to 1000 users
-        { duration: "5m", target: 1000 }, // Stay at 1000 users
-        { duration: "3m", target: 0 }, // Ramp down
+        { duration: "3m", target: 1000 }, // Stay at 1000 users
+        { duration: "2m", target: 0 }, // Ramp down
       ],
       tags: { scenario: "load_test" },
       exec: "loadTest",
-      startTime: "11m", // Start after setup is complete
+      startTime: "3m", // Start after setup is complete
     },
   },
 
   thresholds: {
-    http_req_duration: ["p(95)<2000"], // 95% of requests should be below 2s
-    http_req_failed: ["rate<0.05"], // Error rate should be below 5%
-    "http_req_duration{scenario:load_test}": ["p(90)<1000"], // Load test specific threshold
+    http_req_duration: ["p(95)<2000"],
+    http_req_failed: ["rate<0.05"],
+    "http_req_duration{scenario:load_test}": ["p(90)<1000"],
   },
 };
 
