@@ -1,2 +1,5 @@
 targetName: testpostgresql
+relativePath: devscripts/init.sql
+---
+targetName: testpostgresql
 storedDataset: datasets/test_items.sql
