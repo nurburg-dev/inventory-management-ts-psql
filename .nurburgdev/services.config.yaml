@@ -1,7 +1,7 @@
 name: testservice
 port: 3000
 runtime: nodejs
-instances: 1
+instances: 2
 env:
   DB_HOST: testpostgresql
   DB_NAME: test

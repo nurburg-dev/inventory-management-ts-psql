@@ -1,2 +1,2 @@
 targetName: testpostgresql
-relativePath: src/db/init.sql
+storedDataset: datasets/test_items.sql

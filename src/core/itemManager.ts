@@ -1,15 +1,16 @@
 import { Request, Response } from "express";
-import { CreateItemRequest, TemporarilyBlockInventoryRequest, PermanentlyBlockInventory } from "../models/Item";
+import {
+  CreateItemRequest,
+  TemporarilyBlockInventoryRequest,
+  PermanentlyBlockInventory,
+} from "../models/Item";
 import { pool } from "../db/connection";
 
 export const getItemById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query(
-      'SELECT * FROM items WHERE id = $1',
-      [id]
-    );
+    const result = await pool.query("SELECT * FROM items WHERE id = $1", [id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Item not found" });
@@ -34,7 +35,7 @@ export const createItem = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO items (name, description, quantity, price, category) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      "INSERT INTO items (name, description, quantity, price, category) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       [name, description || null, quantity, price, category || null]
     );
 
@@ -45,7 +46,10 @@ export const createItem = async (req: Request, res: Response) => {
   }
 };
 
-export const temporarilyBlockInventory = async (req: Request, res: Response) => {
+export const temporarilyBlockInventory = async (
+  req: Request,
+  res: Response
+) => {
   const { itemId, quantity }: TemporarilyBlockInventoryRequest = req.body;
 
   if (!itemId || quantity === undefined || quantity <= 0) {
@@ -55,18 +59,18 @@ export const temporarilyBlockInventory = async (req: Request, res: Response) => 
   }
 
   const client = await pool.connect();
-  
+
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     // Lock the item row for update to prevent race conditions
     const itemResult = await client.query(
-      'SELECT * FROM items WHERE id = $1 FOR UPDATE',
+      "SELECT * FROM items WHERE id = $1 FOR UPDATE",
       [itemId]
     );
 
     if (itemResult.rows.length === 0) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       return res.status(404).json({ error: "Item not found" });
     }
 
@@ -74,17 +78,17 @@ export const temporarilyBlockInventory = async (req: Request, res: Response) => 
 
     // Check if there's sufficient quantity available
     if (item.quantity < quantity) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ 
+      await client.query("ROLLBACK");
+      return res.status(400).json({
         error: "Insufficient available quantity",
         available: item.quantity,
-        requested: quantity
+        requested: quantity,
       });
     }
 
     // Decrease the item quantity
     await client.query(
-      'UPDATE items SET quantity = quantity - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      "UPDATE items SET quantity = quantity - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
       [quantity, itemId]
     );
 
@@ -93,20 +97,20 @@ export const temporarilyBlockInventory = async (req: Request, res: Response) => 
     expiresAt.setHours(expiresAt.getHours() + 1);
 
     const blockResult = await client.query(
-      'INSERT INTO block_inventory (item_id, quantity, is_permanent, expires_at) VALUES ($1, $2, FALSE, $3) RETURNING id',
+      "INSERT INTO block_inventory (item_id, quantity, is_permanent, expires_at) VALUES ($1, $2, FALSE, $3) RETURNING id",
       [itemId, quantity, expiresAt]
     );
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
 
-    res.status(201).json({ 
+    res.status(201).json({
       blockId: blockResult.rows[0].id,
       quantityBlocked: quantity,
       remainingQuantity: item.quantity - quantity,
-      expiresAt: expiresAt
+      expiresAt: expiresAt,
     });
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     console.error("Error blocking inventory:", error);
     res.status(500).json({ error: "Failed to block inventory" });
   } finally {
@@ -114,61 +118,64 @@ export const temporarilyBlockInventory = async (req: Request, res: Response) => 
   }
 };
 
-export const permanentlyBlockInventory = async (req: Request, res: Response) => {
+export const permanentlyBlockInventory = async (
+  req: Request,
+  res: Response
+) => {
   const { blockId }: PermanentlyBlockInventory = req.body;
 
   if (!blockId) {
-    return res
-      .status(400)
-      .json({ error: "BlockId is required" });
+    return res.status(400).json({ error: "BlockId is required" });
   }
 
   const client = await pool.connect();
 
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     // Check if block exists and is not already permanent
     const blockResult = await client.query(
-      'SELECT * FROM block_inventory WHERE id = $1 FOR UPDATE',
+      "SELECT * FROM block_inventory WHERE id = $1 FOR UPDATE",
       [blockId]
     );
 
     if (blockResult.rows.length === 0) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       return res.status(404).json({ error: "Block not found" });
     }
 
     const block = blockResult.rows[0];
 
     if (block.is_permanent) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       return res.status(400).json({ error: "Block is already permanent" });
     }
 
     // Check if block has expired
     const currentTime = new Date();
     if (block.expires_at && new Date(block.expires_at) <= currentTime) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: "Cannot make expired block permanent" });
+      await client.query("ROLLBACK");
+      return res
+        .status(400)
+        .json({ error: "Cannot make expired block permanent" });
     }
 
     // Make the block permanent and remove expiration
     await client.query(
-      'UPDATE block_inventory SET is_permanent = TRUE, expires_at = NULL WHERE id = $1',
+      "UPDATE block_inventory SET is_permanent = TRUE, expires_at = NULL WHERE id = $1",
       [blockId]
     );
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
 
-    res.json({ 
-      message: "Block made permanent", 
+    res.json({
+      message: "Block made permanent",
       blockId,
       quantity: block.quantity,
-      itemId: block.item_id
+      itemId: block.item_id,
     });
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     console.error("Error making block permanent:", error);
     res.status(500).json({ error: "Failed to make block permanent" });
   } finally {
@@ -179,9 +186,9 @@ export const permanentlyBlockInventory = async (req: Request, res: Response) => 
 // Cleanup function for expired temporary blocks - restores quantity back to inventory
 export const cleanupExpiredBlocks = async () => {
   const client = await pool.connect();
-  
+
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     // Find expired temporary blocks
     const expiredBlocks = await client.query(
@@ -197,24 +204,24 @@ export const cleanupExpiredBlocks = async () => {
       // Restore quantities back to items
       for (const block of expiredBlocks.rows) {
         await client.query(
-          'UPDATE items SET quantity = quantity + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          "UPDATE items SET quantity = quantity + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
           [block.quantity, block.item_id]
         );
       }
 
       // Remove expired blocks
       await client.query(
-        'DELETE FROM block_inventory WHERE is_permanent = FALSE AND expires_at <= $1',
+        "DELETE FROM block_inventory WHERE is_permanent = FALSE AND expires_at <= $1",
         [new Date()]
       );
 
       console.log(`Cleaned up ${expiredBlocks.rows.length} expired blocks`);
     }
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     return expiredBlocks.rows.length;
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     console.error("Error cleaning up expired blocks:", error);
     throw error;
   } finally {
@@ -226,17 +233,17 @@ export const cleanupExpiredBlocks = async () => {
 export const cleanupExpiredBlocksAPI = async (req: Request, res: Response) => {
   try {
     const cleanedCount = await cleanupExpiredBlocks();
-    
+
     res.json({
       message: "Cleanup completed successfully",
       expiredBlocksRemoved: cleanedCount,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Error in cleanup API:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to cleanup expired blocks",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -263,7 +270,7 @@ export const getTopItemsByCategory = async (req: Request, res: Response) => {
        FROM items 
        WHERE category = $1 
        ORDER BY quantity DESC 
-       LIMIT 100`,
+       LIMIT 5`,
       [category]
     );
 
@@ -271,7 +278,7 @@ export const getTopItemsByCategory = async (req: Request, res: Response) => {
       category,
       items: result.rows,
       count: result.rows.length,
-      totalItemsInCategory: result.rows.length
+      totalItemsInCategory: result.rows.length,
     });
   } catch (error) {
     console.error("Error fetching items by category:", error);

@@ -66,7 +66,7 @@ export const options = {
       executor: "shared-iterations",
       vus: 50, // 50 virtual users
       iterations: ITEM_COUNT, // 50,000 total iterations
-      maxDuration: "3m",
+      maxDuration: "1m",
       tags: { scenario: "setup" },
       exec: "setupItems",
     },
@@ -84,7 +84,7 @@ export const options = {
       ],
       tags: { scenario: "load_test" },
       exec: "loadTest",
-      startTime: "3m", // Start after setup is complete
+      startTime: "1m", // Start after setup is complete
     },
   },
 
